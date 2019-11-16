@@ -1,22 +1,17 @@
-"""
-Colorpalette python package.
-
-Colin Page <cwpage@umich.edu>
-Copyright 2019.
-"""
 import colorsys
 import math
+import os
 
-import click
 import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image, ImageFont, ImageDraw
 from scipy import cluster
 
+from ColorPalette import SHOW, IMAGE, COUNT
 
-def get_color_pallete(input_file, output_file, num_colors, display_color=False):
+
+def get_color_palette(input_file, output_file, num_colors, display_color):
     img = plt.imread(input_file)
-
     red, green, blue = [], [], []
     for line in img:
         for pixel in line:
@@ -35,10 +30,10 @@ def get_color_pallete(input_file, output_file, num_colors, display_color=False):
     df['standardized_green'] = cluster.vq.whiten(df['green'])
     df['standardized_blue'] = cluster.vq.whiten(df['blue'])
 
-    color_pallete, distortion = cluster.vq.kmeans(df[['standardized_red', 'standardized_green', 'standardized_blue']], num_colors)
+    color_palette, distortion = cluster.vq.kmeans(df[['standardized_red', 'standardized_green', 'standardized_blue']], num_colors)
     colors = []
     red_std, green_std, blue_std = df[['red', 'green', 'blue']].std()
-    for color in color_pallete:
+    for color in color_palette:
         scaled_red, scaled_green, scaled_blue = color
         colors.append((
             math.ceil(scaled_red * red_std),
@@ -54,111 +49,90 @@ def get_color_pallete(input_file, output_file, num_colors, display_color=False):
     sample_text = '#F8F8F7'
     proper_font_size = False
 
-    pil_img = Image.open(input_file)
-    pil_width, pil_height = pil_img.size
-    height = 0
-    if pil_height > pil_width:
-        height = math.floor(pil_height / 6)
-    else:
-        height = math.floor(pil_height / 4)
+    img_org = Image.open(input_file)
+    img_org_width, img_org_height = img_org.size
 
-    pallete = Image.new('RGB', (pil_width, height), (255, 255, 255))
-    single_img_space = math.floor(pil_width / num_colors)
-    single_img_offset = math.floor(single_img_space / 14)
-    total_offset = single_img_offset * (num_colors + 1)
-    single_img_width = math.floor((pil_width - total_offset) / num_colors)
-    single_img_space = single_img_width + single_img_offset
+    palette_height = math.floor(img_org_height / 4)
+    if img_org_height > img_org_width:
+        palette_height = math.floor(img_org_height / 6)
 
-    final_img_width = (single_img_width + (pil_width - (single_img_space * num_colors))) - single_img_offset
+    palette = Image.new('RGB', (img_org_width, palette_height), (255, 255, 255))
+    block_width = math.floor(img_org_width / num_colors)
 
     while not proper_font_size:
-        if get_text_width(font, sample_text) > single_img_width and font_size > 1:
+        if get_text_width(font, sample_text) > block_width and font_size > 1:
             font_size -= 1
             font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
-        elif get_text_width(font, sample_text) < single_img_width - 20:
+        elif get_text_width(font, sample_text) < block_width - 20:
             font_size += 1
             font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
         else:
             proper_font_size = True
 
-    x_offset = 0
     for i in range(len(colors)):
-        if i == len(colors) - 1:
-            new_img = Image.new('RGB', (final_img_width, height), colors[i])
-            pallete.paste(new_img, (x_offset, 0))
-            if display_color:
-                draw = ImageDraw.Draw(pallete)
-                draw.text((x_offset, height - 20 - get_text_height(font, sample_text)), get_hex_color(colors[i]), (255, 255, 255), font=font)
-        elif i == 0:
-            new_img = Image.new('RGB', (single_img_width, height), colors[i])
-            pallete.paste(new_img, (single_img_offset, 0))
-            if display_color:
-                draw = ImageDraw.Draw(pallete)
-                draw.text((single_img_offset, height - 20 - get_text_height(font, sample_text)), get_hex_color(colors[i]), (255, 255, 255), font=font)
-            x_offset += single_img_space + single_img_offset
-        else:
-            new_img = Image.new('RGB', (single_img_width, height), colors[i])
-            pallete.paste(new_img, (x_offset, 0))
-            if display_color:
-                draw = ImageDraw.Draw(pallete)
-                draw.text((x_offset, height - 20 - get_text_height(font, sample_text)), get_hex_color(colors[i]), (255, 255, 255), font=font)
-            x_offset += single_img_space
+        new_img = Image.new('RGB', (block_width, palette_height), colors[i])
+        palette.paste(new_img, (block_width * i, 0))
+        if display_color:
+            draw = ImageDraw.Draw(palette)
+            draw.text((block_width * i, palette_height - 20 - get_text_height(font, sample_text)), get_hex_color(colors[i]), (255, 255, 255), font=font)
 
-    pallete.save(output_file)
+    palette.save(output_file)
+    return colors
 
 
-def append_color_pallete(original_image, color_pallete, output_file):
-    og_img = Image.open(original_image)
-    og_width, og_height = og_img.size
-    pallete_img = Image.open(color_pallete)
-    pallete_width, pallete_height = pallete_img.size
+def append_color_palette(original_image, color_palette, output_file, grid):
+    img_org = Image.open(original_image)
+    img_org_width, img_org_height = img_org.size
+    palette_img = Image.open(color_palette)
+    palette_width, palette_height = palette_img.size
 
-    height_offset = math.ceil(og_height / 20)
-    if og_height > og_width:
-        height_offset = math.ceil(og_height / 30)
+    height_offset = math.ceil(img_org_height / 40)
+    if img_org_height > img_org_width:
+        height_offset = math.ceil(img_org_height / 60)
 
-    total_width = og_width
-    total_height = og_height + pallete_height + (height_offset * 2)
+    width_offset = math.ceil(img_org_width / 60)
+    # if img_org_height > img_org_width:
+    #     width_offset = math.ceil(img_org_height / 30)
+
+    total_width = img_org_width + (width_offset * 2)
+    total_height = img_org_height + palette_height + height_offset
 
     combined_img = Image.new('RGB', (total_width, total_height), (255, 255, 255))
 
-    combined_img.paste(og_img, (0, 0))
-    combined_img.paste(pallete_img, (0, og_height + height_offset))
+    for i in range(len(grid)):
+        bg_block = Image.new('RGB', (math.ceil(total_width/len(grid)), total_height), grid[i])
+        combined_img.paste(bg_block, ((math.ceil(total_width/len(grid))) * i, 0))
+
+    combined_img.paste(img_org, (width_offset, height_offset))
+    combined_img.paste(palette_img, (width_offset * 2, img_org_height + height_offset))
 
     combined_img.save(output_file)
 
 
-def create_pallete(filename, num_colors, display_color=False):
-    file_path = filename.split('/')
-    file_prefix = ''
-    file_split = ''
-    for i in range(len(file_path)):
-        if i != len(file_path) - 1:
-            file_prefix = file_prefix + file_path[i] + '/'
-        else:
-            file_split = file_path[i]
-    file_split = file_split.split('.')
-    if file_split[1] != 'jpg' and file_split[1] != 'png':
-        raise ("The file must be a jpg or png")
-
-    output_palette = file_prefix + file_split[0] + '_palette.' + file_split[1]
-    output_combined = file_prefix + file_split[0] + '_with_palette.' + file_split[1]
-    get_color_pallete(filename, output_palette, num_colors, display_color)
-    append_color_pallete(filename, output_palette, output_combined)
+def create_palette(filename, num_colors, display_color):
+    file_extn = filename.split(".")[-1]
+    if file_extn in ("png", "jpg", "jpeg"):
+        output_palette = os.path.join(os.getcwd(), (filename.replace(f".{file_extn}", "") + "_palette." + file_extn))
+        output_combined = os.path.join(os.getcwd(), (filename.replace(f".{file_extn}", "") + "_with_palette." + file_extn))
+        grid = get_color_palette(filename, output_palette, num_colors, display_color)
+        append_color_palette(filename, output_palette, output_combined, grid)
+    else:
+        print("Only JPG and PNG supported currently")
+        exit()
 
 
-def step(r, g, b, repititions=1):
+def step(r, g, b, repetitions=1):
     lum = math.sqrt(0.241 * r + 0.691 * g + 0.068 * b)
 
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
 
-    h2 = int(h * repititions)
-    lum2 = int(lum * repititions)
-    v2 = int(v * repititions)
+    h2 = int(h * repetitions)
+    lum2 = int(lum * repetitions)
+    v2 = int(v * repetitions)
 
     if h2 % 2 == 1:
-        v2 = repititions - v2
-        lum = repititions - lum
+        v2 = repetitions - v2
+        lum = repetitions - lum
 
     return (h2, lum, v2)
 
@@ -181,17 +155,13 @@ def get_text_height(font, text):
     return max(height)
 
 
-@click.command()
-@click.argument('image_file')
-@click.argument('num_colors')
-@click.option('--text', '-t', default=False, is_flag=True, help='')
-def main(image_file, num_colors, text):
+def main():
     try:
-        create_pallete(image_file, int(num_colors), text)
+        create_palette(IMAGE, COUNT, SHOW)
+        # test this
     except Exception as e:
-        print(e)
+        raise Exception
 
 
 if __name__ == '__main__':
-    # pylint: disable=no-value-for-parameter
     main()
