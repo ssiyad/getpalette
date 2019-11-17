@@ -3,16 +3,16 @@ Find the dominant colors in any image
 
 ## Setup
 ```
-git clone https://github.com/ssiyad/ColorPalette
-cd ColorPalette
+git clone https://github.com/ssiyad/getpalette
+cd getpalette
 python3 -m venv env
-source env/bin/activate
+source venv/bin/activate
 pip install -e .
 ```
 
 ## Usage
 ```
-colorpalette [-h] [-c COUNT] [-s] image
+getpalette [-h] [-c COUNT] [-s] image
 
 positional arguments:
   image
@@ -29,10 +29,10 @@ The tool will output two files into the main folder your image was initially in.
 
 ## Examples:
 ### Output Palette
-![alt text](https://github.com/ssiyad/ColorPalette/blob/master/Example/example_palette.jpg)
+![alt text](https://github.com/ssiyad/getpalette/blob/master/Example/example_palette.jpg)
 
 ### Image with Palette
-![alt text](https://github.com/ssiyad/ColorPalette/blob/master/Example/example_with_palette.jpg)
+![alt text](https://github.com/ssiyad/getpalette/blob/master/Example/example_with_palette.jpg)
 
 ## Contribution
 - Report issues

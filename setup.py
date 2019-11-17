@@ -1,15 +1,9 @@
-"""
-ColorPalette python modules.
-
-Colin Page <cwpage@umich.edu>
-"""
-
 from setuptools import setup
 
 setup(
-    name='ColorPalette',
-    version='0.1.0',
-    packages=['ColorPalette'],
+    name='getpalette',
+    version='1.0.0',
+    packages=['getpalette'],
     include_package_data=True,
     install_requires=[
         'Pillow==6.2.1',
@@ -20,7 +14,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'colorpalette = ColorPalette.__main__:main',
+            'getpalette = getpalette.__main__:main',
         ]
     },
 )
