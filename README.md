@@ -1,4 +1,4 @@
-# ColorPalette
+# GetPalette
 Find the dominant colors in any image
 
 ## Setup
