@@ -43,12 +43,6 @@ def get_color_palette(input_file, output_file, num_colors, display_color):
 
     colors.sort(key=lambda x: step(x[0], x[1], x[2], 8))
 
-    # FIXME: need a smart way to resize fonts based on picture size
-    font_size = 11
-    font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
-    sample_text = '#F8F8F7'
-    proper_font_size = False
-
     img_org = Image.open(input_file)
     img_org_width, img_org_height = img_org.size
 
@@ -58,6 +52,12 @@ def get_color_palette(input_file, output_file, num_colors, display_color):
 
     palette = Image.new('RGB', (img_org_width, palette_height), (255, 255, 255))
     block_width = math.floor(img_org_width / num_colors)
+
+    # FIXME: need a smart way to resize fonts based on picture size
+    font_size = 10
+    proper_font_size = False
+    sample_text = "#F8F8F7"
+    font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
 
     while not proper_font_size:
         if get_text_width(font, sample_text) > block_width and font_size > 1:
@@ -127,7 +127,6 @@ def step(r, g, b, repetitions=1):
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
 
     h2 = int(h * repetitions)
-    lum2 = int(lum * repetitions)
     v2 = int(v * repetitions)
 
     if h2 % 2 == 1:
