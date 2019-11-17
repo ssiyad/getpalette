@@ -9,6 +9,10 @@ python3 -m venv env
 source venv/bin/activate
 pip install -e .
 ```
+or
+```
+pip install getpalette
+```
 
 ## Usage
 ```
