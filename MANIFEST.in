@@ -1,1 +1,4 @@
-include Roboto-Medium.ttf LICENSE
+include LICENSE
+include README.md
+include getpalette/*
+include setup.py

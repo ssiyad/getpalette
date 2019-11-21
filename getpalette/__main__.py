@@ -31,6 +31,8 @@ from scipy import cluster
 
 from getpalette import SHOW, IMAGE, COUNT
 
+FONT_FILE = os.path.join(os.path.dirname(__file__), "Roboto-Medium.ttf")
+
 
 def get_color_palette(input_file, output_file, num_colors, display_color):
     img = plt.imread(input_file)
@@ -79,15 +81,15 @@ def get_color_palette(input_file, output_file, num_colors, display_color):
     font_size = 10
     proper_font_size = False
     sample_text = "#F8F8F7"
-    font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
+    font = ImageFont.truetype(FONT_FILE, font_size)
 
     while not proper_font_size:
         if get_text_width(font, sample_text) > block_width and font_size > 1:
             font_size -= 1
-            font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
+            font = ImageFont.truetype(FONT_FILE, font_size)
         elif get_text_width(font, sample_text) < block_width - 20:
             font_size += 1
-            font = ImageFont.truetype("Roboto-Medium.ttf", font_size)
+            font = ImageFont.truetype(FONT_FILE, font_size)
         else:
             proper_font_size = True
 
@@ -122,8 +124,8 @@ def append_color_palette(original_image, color_palette, output_file, grid):
     combined_img = Image.new('RGB', (total_width, total_height), (255, 255, 255))
 
     for i in range(len(grid)):
-        bg_block = Image.new('RGB', (math.ceil(total_width/len(grid)), total_height), grid[i])
-        combined_img.paste(bg_block, ((math.ceil(total_width/len(grid))) * i, 0))
+        bg_block = Image.new('RGB', (math.ceil(total_width / len(grid)), total_height), grid[i])
+        combined_img.paste(bg_block, ((math.ceil(total_width / len(grid))) * i, 0))
 
     combined_img.paste(img_org, (width_offset, height_offset))
     combined_img.paste(palette_img, (width_offset * 2, img_org_height + height_offset))
@@ -179,7 +181,6 @@ def get_text_height(font, text):
 def main():
     try:
         create_palette(IMAGE, COUNT, SHOW)
-        # test this
     except Exception as e:
         raise Exception
 
