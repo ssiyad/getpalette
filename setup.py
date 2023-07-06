@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'Pillow==9.0.0',
         'matplotlib==3.0.3',
-        'scipy==1.3.1',
+        'scipy==1.10.0',
         'pandas==0.24.2'
     ],
     entry_points={
