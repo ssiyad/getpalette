@@ -16,7 +16,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'Pillow==9.0.0',
+        'Pillow==10.0.1',
         'matplotlib==3.0.3',
         'scipy==1.3.1',
         'pandas==0.24.2'
